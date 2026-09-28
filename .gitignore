@@ -1,0 +1,12 @@
+# Chrome temporary/cache files
+.chrome-tmp2/
+**/.chrome-tmp2/
+
+# General cache/temp
+.cache/
+temp/
+tmp/
+
+# OS files
+Thumbs.db
+.DS_Store
