@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 <style>
 /* ================= THEME ================= */
 :root{
@@ -266,31 +267,24 @@ nav{position:fixed;top:16px;left:0;right:0;z-index:100;display:flex;justify-cont
 .filter{padding:10px 20px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:700;font-size:.85rem;transition:.3s var(--ease)}
 .filter:hover{color:var(--text);border-color:var(--text)}
 .filter.active{background:var(--text);color:var(--bg);border-color:var(--text)}
-.proj-grid{display:grid;grid-template-columns:repeat(30,1fr);gap:20px}
-.proj{grid-column:span 10;display:flex;flex-direction:column}
-.proj.feat{grid-column:span 15}
-.proj.mini{grid-column:span 6}
-.proj.mini .proj-img{aspect-ratio:4/3;margin:8px 8px 0;border-radius:12px}
-.proj.mini .proj-img .num{font-size:2rem;left:12px;top:6px}
-.proj.mini .proj-img .open{width:36px;height:36px;right:10px;top:10px}
-.proj.mini .browser{inset:22% 8% -8% 8%;border-radius:8px 8px 0 0}
-.proj.mini .b-bar{height:16px;padding:0 7px;gap:4px}
-.proj.mini .b-bar i{width:6px;height:6px}
-.proj.mini .b-bar em.url{font-size:.5rem;margin-left:6px;max-width:70%}
-.proj.mini .proj-body{padding:14px 14px 16px}
-.proj.mini .proj-meta{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px}
-.proj.mini .proj-cat{font-size:.64rem;letter-spacing:.5px}
-.proj.mini .proj-flag{font-size:.66rem;padding:3px 8px}
-.proj.mini .proj-body h3{font-size:1.02rem;margin-bottom:6px}
-.proj.mini .proj-body p{font-size:.8rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px}
-.proj.mini .tags{gap:5px}
-.proj.mini .tag{font-size:.66rem;padding:3px 8px}
+.proj-slider{position:relative}
+#projSwiper{padding:12px 4px 24px;margin:-12px -4px 0}
+#projSwiper .swiper-slide{height:auto;display:flex}
+#projSwiper .proj{width:100%}
+.proj-nav{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:10px}
+.proj-arrow{width:50px;height:50px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);display:grid;place-items:center;cursor:pointer;transition:.3s var(--ease)}
+.proj-arrow svg{width:20px;height:20px}
+.proj-arrow:hover{background:var(--text);color:var(--bg);border-color:var(--text)}
+.proj-arrow.swiper-button-disabled{opacity:.35;pointer-events:none}
+.proj-pag{position:static!important;width:auto!important;display:flex;align-items:center;gap:4px}
+.proj-pag .swiper-pagination-bullet{width:8px;height:8px;margin:0!important;background:var(--muted);opacity:.4;transition:.3s var(--ease)}
+.proj-pag .swiper-pagination-bullet-active{width:26px;border-radius:99px;background:var(--accent);opacity:1}
+.proj{display:flex;flex-direction:column}
 .proj.wide{grid-column:span 30;flex-direction:row;align-items:stretch}
 .proj.wide .proj-img{flex:1.2;aspect-ratio:auto;min-height:260px;margin:10px 0 10px 10px}
 .proj.wide .proj-body{flex:1;justify-content:center;padding:34px}
 .proj.hide{display:none}
 .proj-img{position:relative;aspect-ratio:16/11;margin:10px 10px 0;border-radius:16px;overflow:hidden}
-.proj.feat .proj-img{aspect-ratio:16/10}
 .proj-img .mock{position:absolute;inset:0;transition:transform .8s var(--ease)}
 .proj:hover .proj-img .mock{transform:scale(1.05)}
 .proj-img .num{position:absolute;left:18px;top:10px;font-family:'Space Grotesk';font-size:3.4rem;font-weight:700;color:rgba(255,255,255,.28);line-height:1}
@@ -302,7 +296,7 @@ nav{position:fixed;top:16px;left:0;right:0;z-index:100;display:flex;justify-cont
 .proj-cat{font-family:'JetBrains Mono';font-size:.74rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
 .proj-flag{font-size:.74rem;font-weight:700;color:var(--muted);padding:4px 10px;border-radius:99px;background:var(--surface-2);white-space:nowrap}
 .proj-body h3{font-size:1.3rem;margin-bottom:8px}
-.proj.feat .proj-body h3,.proj.wide .proj-body h3{font-size:1.65rem}
+.proj.wide .proj-body h3{font-size:1.65rem}
 .proj-body p{color:var(--muted);font-size:.93rem;flex:1}
 .proj.wide .proj-body p{flex:0}
 
@@ -414,9 +408,7 @@ footer{padding:90px 0 30px;overflow:hidden}
 /* ================= RESPONSIVE ================= */
 @media (max-width:1100px){
   .services,.edu-grid{grid-template-columns:repeat(2,1fr)}
-  .proj,.proj.feat{grid-column:span 15}
-  .proj.mini{grid-column:span 10}
-  .nav-links a{padding:9px 10px;font-size:.84rem}
+    .nav-links a{padding:9px 10px;font-size:.84rem}
 }
 @media (max-width:960px){
   .hero-grid,.global,.contact-grid{grid-template-columns:1fr}
@@ -447,8 +439,6 @@ footer{padding:90px 0 30px;overflow:hidden}
   .b-intro{grid-row:auto;padding:28px}
   .b-loc{flex-direction:column;align-items:flex-start}
   .services,.edu-grid,.process{grid-template-columns:1fr}
-  .proj-grid{grid-template-columns:1fr}
-  .proj,.proj.feat,.proj.mini{grid-column:auto}
   .f-row{grid-template-columns:1fr}
   .spin-badge{width:100px;height:100px;left:-22px;top:-26px}
   .spin-badge text{font-size:10px;letter-spacing:1.4px}
@@ -752,7 +742,16 @@ footer{padding:90px 0 30px;overflow:hidden}
         <button class="filter" data-f="web">Web</button>
       </div>
     </div>
-    <div class="proj-grid" id="projGrid"></div>
+    <div class="proj-slider reveal">
+      <div class="swiper" id="projSwiper">
+        <div class="swiper-wrapper" id="projGrid"></div>
+      </div>
+      <div class="proj-nav">
+        <button class="proj-arrow proj-prev" aria-label="Previous project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="proj-pag"></div>
+        <button class="proj-arrow proj-next" aria-label="Next project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -939,6 +938,7 @@ footer{padding:90px 0 30px;overflow:hidden}
 
 <button class="icon-btn" id="toTop" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 // ---------- Theme ----------
 const root=document.documentElement;
@@ -970,16 +970,16 @@ document.getElementById('strip').innerHTML=stripHTML+stripHTML;
 
 // ---------- Projects ----------
 const projects=[
-  {t:'ConiferGB Job Portal',c:'Job portal',f:'client',flag:'London, UK',d:'A complete job portal for a London-based client covering job listings, candidate applications and a full admin management panel.',tags:['Laravel','MySQL','Admin panel'],g:['#ff5b2e','#b8321a'],layout:'list',size:'feat'},
-  {t:'CMS & MIPA Website',c:'CMS · Institution',f:'client',flag:'Mauritius',d:'Content management system and official website for the Mauritius Institute of Professional Accountants (MIPA).',tags:['CMS','PHP','Responsive'],g:['#3a3632','#1f1d1b'],layout:'cms',size:'feat'},
+  {t:'ConiferGB Job Portal',c:'Job portal',f:'client',flag:'London, UK',d:'A complete job portal for a London-based client covering job listings, candidate applications and a full admin management panel.',tags:['Laravel','MySQL','Admin panel'],g:['#ff5b2e','#b8321a'],img:'assets/projects/conifer.png',url:'https://conifergb.com/'},
+  {t:'CMS & MIPA Website',c:'CMS · Institution',f:'client',flag:'Mauritius',d:'Content management system and official website for the Mauritius Institute of Professional Accountants (MIPA).',tags:['CMS','PHP','Responsive'],g:['#3a3632','#1f1d1b'],img:'assets/projects/mipa.png',url:'https://mipa.demodomains.in/'},
   {t:'Advocate Website',c:'Law & Justice',f:'web',flag:'India',d:'A platform to manage advocate profiles and client interactions, making legal services easier to find.',tags:['Laravel','MySQL','Bootstrap'],g:['#e9b44c','#b87a22'],layout:'hero'},
-  {t:'Learning Management System',c:'EdTech · LMS',f:'edtech',flag:'India',d:'Modules for course management and student progress tracking with an intuitive learner dashboard.',tags:['Laravel','React.js','MySQL'],g:['#9fb88a','#5a7547'],layout:'dash'},
+  {t:'Learning Management System',c:'EdTech · LMS',f:'edtech',flag:'India',d:'Modules for course management and student progress tracking with an intuitive learner dashboard.',tags:['Laravel','React.js','MySQL'],g:['#9fb88a','#5a7547'],img:'assets/projects/lms.png',url:'https://flms.demodomains.in/'},
   {t:'University Management System',c:'EdTech · UMS',f:'edtech',flag:'India',d:'Student, faculty and admin modules powered by a modern React UI for daily university operations.',tags:['React.js','Laravel','REST'],g:['#7b8fa6','#44566b'],layout:'dash2'},
-  {t:'Goel Group of Institutions',c:'Institution · Group site',f:'web',flag:'Lucknow, India',d:'Central website for the Goel Group of Institutions with courses, admissions enquiry, placements and links to every member college.',tags:['WordPress','Elementor','Responsive'],g:['#1e3a8a','#0f1f4d'],img:'assets/projects/goel.jpg',url:'http://goel.edu.in/',size:'mini'},
-  {t:'GITM Website',c:'Institution · Engineering',f:'web',flag:'Lucknow, India',d:'Website for the Goel Institute of Technology & Management covering academics, admissions, circulars, NIRF and placements.',tags:['WordPress','Elementor','Responsive'],g:['#d9a53a','#8f6a1c'],img:'assets/projects/gitm.jpg',url:'http://gitm.goel.edu.in/',size:'mini'},
-  {t:'GAMCH Website',c:'Institution · Ayurveda',f:'web',flag:'Lucknow, India',d:'Website for the Goel Ayurvedic Medical College & Hospital with hospital, college and NCISM information.',tags:['WordPress','Elementor'],g:['#f3941d','#a85f0c'],img:'assets/projects/gamch.jpg',url:'https://gamch.goel.edu.in/',size:'mini'},
-  {t:'GIPS Website',c:'Institution · Pharmacy',f:'web',flag:'Lucknow, India',d:'Website for the Goel Institute of Pharmacy & Sciences, an NBA-accredited pharmacy college, with committees, faculty and placements.',tags:['WordPress','Elementor'],g:['#1a1a8c','#0b0b4a'],img:'assets/projects/gips.jpg',url:'https://gips.goel.edu.in/',size:'mini'},
-  {t:'GIPCS Website',c:'Institution · Pharmacy',f:'web',flag:'Lucknow, India',d:'Website for the Goel Institute of Pharmaceutical Sciences with courses, events, gallery and placement details.',tags:['WordPress','Elementor'],g:['#9b0a14','#5a050b'],img:'assets/projects/gipcs.jpg',url:'http://gipcs.goel.edu.in/',size:'mini'}
+  {t:'Goel Group of Institutions',c:'Institution · Group site',f:'web',flag:'Lucknow, India',d:'Central website for the Goel Group of Institutions with courses, admissions enquiry, placements and links to every member college.',tags:['WordPress','Elementor','Responsive'],g:['#1e3a8a','#0f1f4d'],img:'assets/projects/goel.jpg',url:'http://goel.edu.in/'},
+  {t:'GITM Website',c:'Institution · Engineering',f:'web',flag:'Lucknow, India',d:'Website for the Goel Institute of Technology & Management covering academics, admissions, circulars, NIRF and placements.',tags:['WordPress','Elementor','Responsive'],g:['#d9a53a','#8f6a1c'],img:'assets/projects/gitm.jpg',url:'http://gitm.goel.edu.in/'},
+  {t:'GAMCH Website',c:'Institution · Ayurveda',f:'web',flag:'Lucknow, India',d:'Website for the Goel Ayurvedic Medical College & Hospital with hospital, college and NCISM information.',tags:['WordPress','Elementor'],g:['#f3941d','#a85f0c'],img:'assets/projects/gamch.jpg',url:'https://gamch.goel.edu.in/'},
+  {t:'GIPS Website',c:'Institution · Pharmacy',f:'web',flag:'Lucknow, India',d:'Website for the Goel Institute of Pharmacy & Sciences, an NBA-accredited pharmacy college, with committees, faculty and placements.',tags:['WordPress','Elementor'],g:['#1a1a8c','#0b0b4a'],img:'assets/projects/gips.jpg',url:'https://gips.goel.edu.in/'},
+  {t:'GIPCS Website',c:'Institution · Pharmacy',f:'web',flag:'Lucknow, India',d:'Website for the Goel Institute of Pharmaceutical Sciences with courses, events, gallery and placement details.',tags:['WordPress','Elementor'],g:['#9b0a14','#5a050b'],img:'assets/projects/gipcs.jpg',url:'http://gipcs.goel.edu.in/'}
 ];
 function mockBody(layout,a){
   const L=w=>`<div class="ln" style="width:${w}%"></div>`, S='#efe9dd';
@@ -989,8 +989,8 @@ function mockBody(layout,a){
   if(layout==='cms') return `<div class="row"><div class="blk" style="flex:2;height:70px;background:#2a2826"></div><div style="flex:1;display:grid;gap:6px">${L(90)}${L(70)}${L(80)}<div class="blk" style="height:16px;width:60%;background:#ff5b2e"></div></div></div>${L(85)}${L(60)}`;
   return `<div class="row">${[a,S,a,S].map(c=>`<div style="flex:1;display:grid;gap:5px"><div class="blk" style="height:46px;background:${c}"></div>${L(80)}${L(50)}</div>`).join('')}</div>`;
 }
-document.getElementById('projGrid').innerHTML=projects.map((p,i)=>`
-  <article class="card proj reveal ${p.size||''}" data-f="${p.f}">
+const projCard=(p,i)=>`
+  <div class="swiper-slide"><article class="card proj" data-f="${p.f}">
     <div class="proj-img">
       <div class="mock" style="background:linear-gradient(145deg,${p.g[0]},${p.g[1]})">
         <span class="num">${String(i+1).padStart(2,'0')}</span>
@@ -1006,13 +1006,27 @@ document.getElementById('projGrid').innerHTML=projects.map((p,i)=>`
       <p>${p.d}</p>
       <div class="tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
     </div>
-  </article>`).join('');
+  </article></div>`;
+const projGrid=document.getElementById('projGrid');
+function renderProjects(f){
+  projGrid.innerHTML=projects.map((p,i)=>[p,i]).filter(([p])=>f==='all'||p.f===f).map(([p,i])=>projCard(p,i)).join('');
+}
+renderProjects('all');
+const projSwiper=new Swiper('#projSwiper',{
+  slidesPerView:1.08,spaceBetween:16,grabCursor:true,speed:700,watchOverflow:true,
+  keyboard:{enabled:true,onlyInViewport:true},
+  autoplay:{delay:4500,disableOnInteraction:false,pauseOnMouseEnter:true},
+  navigation:{prevEl:'.proj-prev',nextEl:'.proj-next'},
+  pagination:{el:'.proj-pag',clickable:true},
+  breakpoints:{640:{slidesPerView:2,spaceBetween:20},1100:{slidesPerView:3,spaceBetween:22}}
+});
 
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   const f=b.dataset.f;
-  document.querySelectorAll('.proj').forEach(p=>p.classList.toggle('hide',f!=='all'&&p.dataset.f!==f));
+  renderProjects(f);
+  projSwiper.update(); projSwiper.slideTo(0,0); projSwiper.autoplay.start();
 }));
 
 // ---------- Mobile menu ----------
