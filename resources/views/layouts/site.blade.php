@@ -46,8 +46,9 @@ nav + :not(section){margin-top:118px}
 <body class="loading">
 
 <!-- PRELOADER -->
-<div id="loader">
-  <div class="l-name"><span>{{ $name }}</span><span class="accent">.</span></div>
+<div id="loader" role="status" aria-label="Loading {{ $name }} portfolio">
+  <div class="l-name" aria-hidden="true">@foreach (mb_str_split($name) as $letter)<span style="--letter:{{ $loop->index }}">{{ $letter === ' ' ? "\u{00A0}" : $letter }}</span>@endforeach<span class="accent" style="--letter:{{ mb_strlen($name) }}">.</span></div>
+  <div class="l-tagline" aria-hidden="true">Ideas. Code. Experiences.</div>
   <div class="l-bar"><i id="lBar"></i></div>
   <div class="l-count" id="lCount">0%</div>
 </div>
@@ -61,6 +62,7 @@ nav + :not(section){margin-top:118px}
 @yield('content')
 
 @include('site.footer')
+@include('site.chat')
 
 <button class="icon-btn" id="toTop" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 

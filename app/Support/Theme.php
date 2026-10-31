@@ -27,7 +27,10 @@ class Theme
         }
 
         try {
-            $saved = Setting::where('key', 'like', 'theme\_%')->pluck('value', 'key');
+            $saved = Setting::whereIn('key', [
+                'theme_mode', 'theme_color', 'theme_accent', 'theme_accent2',
+                'theme_bg_choice', 'theme_bg', 'theme_layout', 'theme_combination',
+            ])->pluck('value', 'key');
         } catch (Throwable) {
             // Settings table not migrated yet: fall back to the defaults.
             $saved = collect();
@@ -75,12 +78,18 @@ class Theme
         }
 
         [$r, $g, $b] = sscanf($accent, '#%02x%02x%02x');
+        $combination = $saved->get('theme_combination', 'individual');
+        $palette = config('theme.combinations.'.$combination.'.'.$savedMode);
+        if (! is_array($palette) || $bg !== $palette['bg'] || $accent !== $palette['accent'] || $accent2 !== $palette['accent2']) {
+            $combination = 'individual';
+        }
 
         return static::$current = [
+            'combination' => $combination,
             'mode' => $mode,
             'saved_mode' => $savedMode,
             'color' => $color,
-            'color_label' => $color === static::CUSTOM ? 'Custom' : config("theme.colors.$color.label"),
+            'color_label' => $combination !== 'individual' ? config('theme.combinations.'.$combination.'.label') : ($color === static::CUSTOM ? 'Custom' : config("theme.colors.$color.label")),
             'layout' => $layout,
             'background' => config("theme.layouts.$layout.background"),
             'radius' => config("theme.layouts.$layout.radius"),

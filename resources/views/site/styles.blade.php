@@ -462,6 +462,21 @@ footer{padding:90px 0 30px;overflow:hidden}
   .m-item{font-size:1.15rem;padding:20px 22px}
   .exp-big{font-size:5rem}
 }
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.reveal{opacity:1;translate:none}.hero h1 .line>span{transform:none}}
+#loader{transition:transform .6s var(--ease)}
+#loader[hidden]{display:none}
+#loader .l-name span{animation:up .7s var(--ease) both;animation-delay:calc(var(--letter,0)*35ms)}
+.l-tagline{font-size:.66rem;font-weight:500;text-transform:uppercase;letter-spacing:.25em;color:var(--muted);animation:reel-fade .8s .5s both}
+.loading .hero :is(.hero-sub,.role,.btns,.hero-social){opacity:0}
+.ready .hero :is(.hero-sub,.role,.btns,.hero-social){animation:reel-fade .85s var(--ease) both}
+.ready .hero .hero-sub{animation-delay:.15s}.ready .hero .role{animation-delay:.25s}.ready .hero .btns{animation-delay:.35s}.ready .hero .hero-social{animation-delay:.45s}
+.reveal[data-reveal="left"]:not(.in){translate:-28px 0}
+@keyframes reel-fade{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@media(hover:hover) and (pointer:fine){.proj{transform:perspective(1000px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transition:transform .25s var(--ease),border-color .3s}.proj:hover{border-color:var(--accent)}}
+html{overflow-x:clip}
+nav{max-width:100vw}
+.nav-inner{min-width:0;max-width:100%}
+@media(max-width:600px){#loader .l-name{font-size:clamp(2rem,9vw,3.4rem)}.hero .role{overflow-wrap:anywhere}.proj-body .tags{flex-wrap:wrap}}
+@media(max-width:480px){nav{width:100vw}.hero .btns .btn{font-size:.8rem;gap:8px;padding:14px 12px;white-space:nowrap}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.reveal,.reveal[data-reveal="left"]:not(.in){opacity:1;translate:none}.hero h1 .line>span{transform:none}.loading .hero :is(.hero-sub,.role,.btns,.hero-social){opacity:1}}
 </style>
 @endverbatim

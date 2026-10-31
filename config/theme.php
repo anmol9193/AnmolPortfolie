@@ -98,6 +98,45 @@ return [
     |
     */
 
+    'combinations' => [
+        'ocean' => [
+            'label' => 'Ocean',
+            'description' => 'Cool blue with a fresh teal accent.',
+            'dark' => ['bg' => '#0b1725', 'accent' => '#60a5fa', 'accent2' => '#2dd4bf'],
+            'light' => ['bg' => '#edf5fc', 'accent' => '#1d4ed8', 'accent2' => '#0f766e'],
+        ],
+        'sunset' => [
+            'label' => 'Sunset',
+            'description' => 'Warm coral with golden highlights.',
+            'dark' => ['bg' => '#20121b', 'accent' => '#fb7185', 'accent2' => '#fbbf24'],
+            'light' => ['bg' => '#fff3eb', 'accent' => '#c2410c', 'accent2' => '#b45309'],
+        ],
+        'aurora' => [
+            'label' => 'Aurora',
+            'description' => 'Soft violet paired with turquoise.',
+            'dark' => ['bg' => '#161225', 'accent' => '#a78bfa', 'accent2' => '#2dd4bf'],
+            'light' => ['bg' => '#f4f0fc', 'accent' => '#6d28d9', 'accent2' => '#0f766e'],
+        ],
+        'forest' => [
+            'label' => 'Forest',
+            'description' => 'Earthy greens with a warm amber accent.',
+            'dark' => ['bg' => '#101c17', 'accent' => '#6ee7b7', 'accent2' => '#fbbf24'],
+            'light' => ['bg' => '#eef5ec', 'accent' => '#166534', 'accent2' => '#a16207'],
+        ],
+        'rose' => [
+            'label' => 'Rose',
+            'description' => 'Rose pink balanced with deep violet.',
+            'dark' => ['bg' => '#24131f', 'accent' => '#f9a8d4', 'accent2' => '#c4b5fd'],
+            'light' => ['bg' => '#fff1f5', 'accent' => '#be185d', 'accent2' => '#7c3aed'],
+        ],
+        'midnight-gold' => [
+            'label' => 'Midnight Gold',
+            'description' => 'Golden details with a calm blue accent.',
+            'dark' => ['bg' => '#111827', 'accent' => '#f5c76b', 'accent2' => '#93c5fd'],
+            'light' => ['bg' => '#faf5e9', 'accent' => '#92400e', 'accent2' => '#1e40af'],
+        ],
+    ],
+
     'colors' => [
         'orange' => [
             'label' => 'Orange',

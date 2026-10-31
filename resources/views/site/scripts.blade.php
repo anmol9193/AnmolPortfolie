@@ -30,11 +30,16 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 // ---------- Preloader ----------
 (function(){
   const bar=$id('lBar'), cnt=$id('lCount'), loader=$id('loader');
-  let p=0; const t=setInterval(()=>{
-    p=Math.min(100,p+Math.ceil(Math.random()*14));
-    bar.style.width=p+'%'; cnt.textContent=p+'%';
-    if(p>=100){clearInterval(t);setTimeout(()=>{loader.classList.add('done');document.body.classList.remove('loading');document.body.classList.add('ready')},250)}
-  },60);
+  if(!loader) return;
+  const duration=matchMedia('(prefers-reduced-motion:reduce)').matches?0:1800, started=performance.now();
+  function frame(now){
+    const progress=duration?Math.min(1,(now-started)/duration):1;
+    bar.style.width=(progress*100)+'%'; cnt.textContent=Math.round(progress*100)+'%';
+    if(progress<1){requestAnimationFrame(frame);return;}
+    loader.classList.add('done');document.body.classList.remove('loading');document.body.classList.add('ready');
+    setTimeout(()=>{loader.hidden=true},650);
+  }
+  requestAnimationFrame(frame);
 })();
 
 // ---------- Marquees ----------
@@ -117,11 +122,13 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{
   e.target.classList.add('in'); io.unobserve(e.target);
   setTimeout(()=>{e.target.style.transitionDelay=''},1700);
 }),{threshold:.1,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+document.querySelectorAll('.reveal').forEach((el,index)=>{if(index%3===1)el.dataset.reveal='left';io.observe(el)});
 
 // ---------- Typing ----------
 if($id('typed') && SITE.words.length){
   const words=SITE.words, typed=$id('typed'); let wi=0,ci=0,del=false;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){typed.textContent=words[0]}
+  else {
   (function type(){
     const w=words[wi]; typed.textContent=w.slice(0,ci);
     if(!del&&ci<w.length){ci++;setTimeout(type,70)}
@@ -129,6 +136,19 @@ if($id('typed') && SITE.words.length){
     else if(ci>0){ci--;setTimeout(type,30)}
     else{del=false;wi=(wi+1)%words.length;setTimeout(type,300)}
   })();
+  }
+}
+
+if(matchMedia('(hover:hover) and (pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches){
+  document.addEventListener('pointermove',event=>{
+    const card=event.target.closest('.proj');if(!card)return;
+    const rect=card.getBoundingClientRect();
+    card.style.setProperty('--tilt-x',((.5-(event.clientY-rect.top)/rect.height)*5)+'deg');
+    card.style.setProperty('--tilt-y',(((event.clientX-rect.left)/rect.width-.5)*6)+'deg');
+  },{passive:true});
+  document.addEventListener('pointerout',event=>{
+    const card=event.target.closest('.proj');if(card&&!card.contains(event.relatedTarget)){card.style.removeProperty('--tilt-x');card.style.removeProperty('--tilt-y')}
+  });
 }
 
 // ---------- Counters ----------

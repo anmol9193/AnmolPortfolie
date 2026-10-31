@@ -13,6 +13,21 @@ class AppearanceController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $hex = 'regex:/^#[0-9a-fA-F]{6}$/';
+        $request->merge(['combination' => $request->input('combination', 'individual')]);
+        $selection = $request->validate([
+            'mode' => ['required', 'string', Rule::in(config('theme.modes'))],
+            'combination' => ['required', 'string', Rule::in(['individual', ...array_keys(config('theme.combinations'))])],
+        ]);
+        if ($selection['combination'] !== 'individual') {
+            $palette = config('theme.combinations.'.$selection['combination'].'.'.$selection['mode']);
+            $request->merge([
+                'color' => Theme::CUSTOM,
+                'accent' => $palette['accent'],
+                'accent2' => $palette['accent2'],
+                'background' => Theme::CUSTOM,
+                'bg' => $palette['bg'],
+            ]);
+        }
 
         $data = $request->validate([
             'mode' => ['required', Rule::in(config('theme.modes'))],
@@ -24,6 +39,7 @@ class AppearanceController extends Controller
         ], [], ['accent' => 'main color', 'accent2' => 'second color', 'bg' => 'background color']);
 
         $values = [
+            'theme_combination' => $selection['combination'],
             'theme_mode' => $data['mode'],
             'theme_color' => $data['color'],
             'theme_accent' => $data['color'] === Theme::CUSTOM ? $data['accent'] : '',
