@@ -3,12 +3,18 @@
     $initials = collect(explode(' ', trim($user->name)))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
     $nav = [
         ['admin.dashboard', 'Dashboard', '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'],
+        ['admin.chat', 'AI Chatbot', '<rect x="3" y="3" width="18" height="15" rx="4"/><path d="M7 18v3l4-3M8 9h8M8 13h5"/>'],
         ['admin.themes', 'Themes', '<rect x="3" y="3" width="18" height="6" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="15" y="13" width="6" height="8" rx="1.5"/>'],
         ['admin.appearance', 'Appearance', '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'],
         ['admin.pages', 'Site pages', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'],
         ['admin.messages', 'Messages', '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/>'],
         ['admin.account', 'Account', '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
     ];
+    if ($user->isSuperAdmin()) {
+        $nav[] = ['admin.users', 'Admins', '<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 4v2"/>'];
+    } else {
+        $nav = array_values(array_filter($nav, fn (array $item) => in_array($item[0], ['admin.dashboard', 'admin.themes', 'admin.appearance', 'admin.pages', 'admin.messages'], true)));
+    }
     // unread contact form messages, shown as a badge in the menu
     $unreadMessages = rescue(fn () => \App\Models\ContactMessage::whereNull('read_at')->count(), 0, false);
 @endphp
@@ -65,6 +71,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-2;background-image:linea
 
 /* ================= SIDEBAR ================= */
 .sidebar{position:fixed;inset:0 auto 0 0;width:var(--side);z-index:100;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;padding:22px 16px 18px;background:var(--surface);border-right:1px solid var(--border);transition:transform .45s var(--ease)}
+.sidebar{scrollbar-color:var(--accent) var(--surface)}
+.sidebar::-webkit-scrollbar-track{background:var(--surface)}
+.sidebar::-webkit-scrollbar-thumb{background:var(--accent)}
+.sidebar::-webkit-scrollbar-thumb:hover{background:var(--accent-2)}
 .logo{font-weight:700;font-size:1.2rem;display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
 .logo b{width:36px;height:36px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.95rem;transition:transform .5s var(--ease)}
 .logo:hover b{transform:rotate(-12deg) scale(1.08)}
@@ -122,7 +132,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-2;background-image:linea
 .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);padding:13px 24px;font-size:.92rem}
 .btn-primary:hover{border-color:var(--accent);box-shadow:0 16px 36px -12px var(--accent)}
 .btn-primary:hover svg{transform:none}
-.content{flex:1;padding:20px;width:100%;max-width:1180px}
+.content{flex:1;padding:24px 28px;width:100%;min-width:0}
 footer{padding:20px 32px 30px;color:var(--faint);font-size:.8rem}
 
 /* ================= PAGE HEAD ================= */
@@ -305,6 +315,7 @@ legend{font-family:'Poppins',sans-serif;font-size:.72rem;text-transform:uppercas
     @endforeach
   </ul>
 
+  @can('super-admin')
   <div class="side-label">Content</div>
   <ul class="menu">
     <li>
@@ -334,6 +345,8 @@ legend{font-family:'Poppins',sans-serif;font-size:.72rem;text-transform:uppercas
     </li>
   </ul>
 
+  @endcan
+
   <div class="side-foot">
     <form method="POST" action="{{ route('logout') }}" class="menu">
       @csrf
@@ -353,8 +366,10 @@ legend{font-family:'Poppins',sans-serif;font-size:.72rem;text-transform:uppercas
     </button>
     <div class="crumb">Admin / <b>@yield('title', 'Dashboard')</b></div>
     <div class="sp"></div>
+    @can('super-admin')
     <a href="{{ url('/') }}" target="_blank" rel="noopener" class="btn"><span>View portfolio</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></a>
+    @endcan
     <div class="user-menu" id="userMenu">
       <button class="user" id="userBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="userDrop">
         <span class="avatar">@if ($user->avatar)<img src="{{ media($user->avatar) }}" alt="">@else{{ $initials }}@endif</span>
@@ -363,10 +378,12 @@ legend{font-family:'Poppins',sans-serif;font-size:.72rem;text-transform:uppercas
       </button>
       <div class="user-drop" id="userDrop" hidden>
         <div class="ud-head"><b>{{ $user->name }}</b><small>{{ $user->email }}</small></div>
+        @can('super-admin')
         <a href="{{ route('admin.account') }}#profile">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</a>
         <a href="{{ route('admin.account') }}#password">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Change password</a>
+        @endcan
         <form method="POST" action="{{ route('logout') }}">
           @csrf
           <button type="submit" class="ud-out">

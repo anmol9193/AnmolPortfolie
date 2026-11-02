@@ -88,7 +88,7 @@
       <div class="card" style="animation-delay:.12s">
         <div class="card-head"><h2>Details</h2><span>Info</span></div>
         <ul class="rows">
-          <li><span>Role</span><b>Site owner</b></li>
+          <li><span>Role</span><b>{{ $user->isSuperAdmin() ? 'Super admin' : 'Admin' }}</b></li>
           <li><span>Account created</span><b>{{ $user->created_at?->format('d M Y') ?? '—' }}</b></li>
           <li><span>Last changed</span><b>{{ $user->updated_at?->diffForHumans() ?? '—' }}</b></li>
         </ul>

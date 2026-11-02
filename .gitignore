@@ -39,3 +39,12 @@ tmp/
 Thumbs.db
 .DS_Storeassets/.chrome-tmp/
 
+
+.env*
+!.env.example
+
+# Local reel recordings and generated narration
+/out/
+/assets/voice*.mp3
+/assets/voice*.json
+/scripts/__pycache__/

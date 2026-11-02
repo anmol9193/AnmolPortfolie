@@ -1,6 +1,9 @@
 {{-- Appearance chosen in the admin panel; overrides the page's default tokens and backdrop. --}}
 <style>
 html[data-theme]{--accent:{{ $theme['accent'] }};--accent-2:{{ $theme['accent2'] }};--accent-ink:{{ $theme['ink'] }};--accent-soft:{{ $theme['soft'] }};--radius:{{ $theme['radius'] }}}
+@if ($theme['combination'] !== 'individual')
+html[data-theme]{--text:{{ $theme['mode'] === 'dark' ? '#f4f7fb' : '#17202d' }};--muted:color-mix(in srgb,var(--text) 70%,var(--bg));--faint:color-mix(in srgb,var(--text) 55%,var(--bg));--lime:{{ $theme['accent2'] }}}
+@endif
 @if ($theme['bg'])
 {{-- custom background: the surface shades are derived from it (towards white on dark, both ways on light) --}}
 @if ($theme['mode'] === 'dark')

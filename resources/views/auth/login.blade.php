@@ -1,3 +1,7 @@
+@php
+    $loginMethod ??= 'password';
+    $otpEmail ??= null;
+@endphp
 <!DOCTYPE html>
 <html lang="en" data-theme="{{ $theme['mode'] }}">
 <head>
@@ -52,7 +56,7 @@ body::after{content:"";position:fixed;inset:0;z-index:999;pointer-events:none;op
 @media (hover:hover) and (pointer:fine){.cur-dot,.cur-ring{display:block}}
 
 /* ================= LAYOUT ================= */
-.split{width:min(1200px,100% - 32px);margin-inline:auto;height:100vh;height:100dvh;display:grid;grid-template-columns:1.25fr .75fr;gap:70px;align-items:center}
+.split{width:min(1200px,100% - 32px);margin-inline:auto;min-height:100vh;min-height:100dvh;padding-block:32px;display:grid;grid-template-columns:1.25fr 1.5fr;gap:70px;align-items:center}
 .intro,.side{min-width:0}
 
 /* ================= LEFT: HERO (home page) ================= */
@@ -126,6 +130,10 @@ form .btn{width:100%;justify-content:center}
 @keyframes spin{to{transform:rotate(360deg)}}
 form.card::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
 .card-top{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.login-icon{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:14px;background:var(--accent-soft);color:var(--accent)}
+.login-icon svg{width:24px;height:24px}
+.card-top > div{min-width:0}
+.field .otp-control input{padding-inline:46px}
 .card-top h3{margin-bottom:2px}
 .card-top p{color:var(--muted);font-size:.88rem}
 .control > .lead{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--faint);pointer-events:none;transition:color .3s}
@@ -174,6 +182,11 @@ form.card::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;backgr
   .back{margin-top:16px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.login-note{font-size:.78rem;color:var(--muted);line-height:1.6;margin:10px 0 16px;overflow-wrap:anywhere}
+.otp-actions{display:flex;gap:18px;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap}
+.otp-actions button,.otp-actions a{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-size:.8rem;cursor:pointer}
+#code{letter-spacing:.35em;font-size:1.3rem;text-align:center}
+@media(max-width:900px){.field input{font-size:1rem}}
 </style>
 @endverbatim
 @include('partials.theme')
@@ -203,45 +216,66 @@ form.card::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;backgr
 
   <main class="side fade" style="--d:.2s">
     <div class="eyebrow">{{ content('login.eyebrow') }}</div>
-    <form class="card" id="loginForm" method="POST" action="{{ route('login') }}">
+    <form class="card" id="loginForm" method="POST" action="{{ $loginMethod === 'password' ? route('login') : route('login.otp.verify') }}">
       @csrf
       <div class="card-top">
+        <span class="login-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m8 12 3 3 5-6"/></svg></span>
         <div>
-          <h3>{{ rich(content('login.title')) }}</h3>
-          <p>{{ content('login.note') }}</p>
+          <h3>{{ $loginMethod === 'otp' ? 'Verify your email' : rich(content('login.title')) }}</h3>
+          <p>{{ $loginMethod === 'otp' ? 'Enter the 6-digit code sent to '.$otpEmail.' to finish signing in.' : 'Enter your email and password. We will send an email verification code before signing you in.' }}</p>
         </div>
       </div>
+      @if ($errors->any())<div class="error" role="alert">{{ $errors->first() }}</div>@endif
+      @if (session('status'))<p class="login-note" role="status">{{ session('status') }}</p>@endif
 
-      @if ($errors->any())
-        <div class="error" role="alert">{{ $errors->first() }}</div>
+      @if ($loginMethod === 'otp' && $otpEmail)
+        <div class="field">
+          <label for="code">One-time code</label>
+          <div class="control otp-control">
+            <svg class="lead" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9h10M7 13h.01M12 13h.01M17 13h.01"/></svg>
+            <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus autocomplete="one-time-code" placeholder="123456">
+          </div>
+          <p class="login-note">Expires after 5 minutes. You have up to 5 attempts.</p>
+        </div>
+      @else
+        <div class="field">
+          <label for="email">Your email</label>
+          <div class="control">
+            <svg class="lead" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="you@example.com" maxlength="255">
+          </div>
+        </div>
       @endif
 
-      <div class="field">
-        <label for="email">Your email</label>
-        <div class="control">
-          <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>
-          <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="you@example.com">
+      @if ($loginMethod === 'password')
+        <div class="field has-eye">
+          <label for="password">Password</label>
+          <div class="control">
+            <svg class="lead" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>
+            <input id="password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+            <button class="eye" id="eyeBtn" type="button" aria-label="Show password" aria-pressed="false">
+              <svg class="show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M3 8s3-4 9-4 9 8 9 8-2 4-5 6M3 12s3 8 9 8"/></svg>
+            </button>
+          </div>
+          <div class="caps" id="capsHint" role="status">Caps Lock is on</div>
         </div>
-      </div>
-      <div class="field has-eye">
-        <label for="password">Password</label>
-        <div class="control">
-          <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input id="password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
-          <button class="eye" id="eyeBtn" type="button" aria-label="Show password" aria-pressed="false">
-          <svg class="show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-          <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a20.5 20.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>
-        </button>
-        </div>
-        <div class="caps" id="capsHint" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 9h-5v5H9v-5H4zM9 21h6"/></svg>Caps Lock is on</div>
-      </div>
-
-      <label class="remember"><input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}> Remember me</label>
-
-      <button class="btn btn-primary" id="submitBtn" type="submit"><span>{{ content('login.button') }}</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
-      <div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Private area · only the site owner can sign in</div>
+      @endif
+      <button class="btn btn-primary" id="submitBtn" type="submit"><span>{{ $loginMethod === 'password' ? 'Continue' : 'Verify and sign in' }}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div class="secure"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Private area: registered admins only</div>
     </form>
+    @if ($loginMethod === 'otp' && $otpEmail)
+      <div class="otp-actions">
+        <form method="POST" action="{{ route('login.otp.send') }}">
+          @csrf
+          <button type="submit">Resend code</button>
+        </form>
+        <a href="{{ route('login.otp', ['change' => 1]) }}">Back to sign in</a>
+      </div>
+      <p class="login-note">Please wait 60 seconds before resending.</p>
+    @endif
 
     <div class="foot-row">
       <a class="back" href="{{ url('/') }}">
@@ -257,6 +291,7 @@ form.card::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;backgr
 <script>
 // ---------- Show / hide password ----------
 const eye=document.getElementById('eyeBtn'), pw=document.getElementById('password');
+if (eye && pw) {
 eye.addEventListener('click',()=>{
   const show=pw.type==='password';
   pw.type=show?'text':'password';
@@ -271,12 +306,14 @@ const caps=document.getElementById('capsHint');
   if(e.getModifierState) caps.classList.toggle('on',e.getModifierState('CapsLock'));
 }));
 pw.addEventListener('blur',()=>caps.classList.remove('on'));
+}
 
 // ---------- Button loading state ----------
 document.getElementById('loginForm').addEventListener('submit',()=>{
   const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
   btn.classList.add('busy');
-  btn.querySelector('span').textContent='Signing in…';
+  btn.querySelector('span').textContent='Please wait…';
   btn.querySelector('svg').innerHTML='<path d="M21 12a9 9 0 1 1-6.2-8.56"/>';
 });
 

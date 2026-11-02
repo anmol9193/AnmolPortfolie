@@ -6,12 +6,13 @@
     use App\Models\PortfolioItem;
 
     $user = auth()->user();
+    $canManageContent = $user->isSuperAdmin();
     $pages = \App\Support\Pages::all();
     $collections = config('content.collections');
-    $counts = PortfolioItem::selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type');
+    $counts = $canManageContent ? PortfolioItem::selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type') : collect();
     $totalItems = $counts->sum();
     $maxCount = max(1, $counts->max() ?? 1);
-    $recent = PortfolioItem::whereIn('type', array_keys($collections))->latest('updated_at')->take(6)->get();
+    $recent = $canManageContent ? PortfolioItem::whereIn('type', array_keys($collections))->latest('updated_at')->take(6)->get() : collect();
     $layout = config('theme.layouts.'.$theme['layout']);
 
     // icon (inside of a 24x24 stroke svg) for each collection tile
@@ -38,7 +39,7 @@
 .banner p{opacity:.88;font-size:.95rem;max-width:520px}
 
 /* ---------- collection tiles ---------- */
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:22px}
 .tile{position:relative;overflow:hidden;display:block;padding:18px 16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);transition:transform .4s var(--ease),border-color .3s;animation:rise .7s var(--ease) both}
 .tile::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:var(--accent-soft);transition:transform .5s var(--ease)}
 .tile:hover{transform:translateY(-4px);border-color:var(--accent)}
@@ -47,13 +48,17 @@
 .tile .ic{width:40px;height:40px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-bottom:16px}
 .tile .ic svg{width:19px;height:19px}
 .tile b{display:block;font-size:2rem;font-weight:700;letter-spacing:-.03em;line-height:1}
+.tile .tile-title{font-size:1.05rem;line-height:1.3}
 .tile span{display:block;color:var(--muted);font-size:.85rem;margin-top:4px}
 .tile em{position:absolute;right:16px;bottom:16px;font-style:normal;color:var(--faint);transition:.3s var(--ease)}
 .tile em svg{width:16px;height:16px;display:block}
 .tile:hover em{color:var(--accent);transform:translate(2px,-2px)}
 
 /* ---------- lower grid ---------- */
-.dash{display:grid;grid-template-columns:1.45fr 1fr;gap:18px;align-items:start}
+.dash{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:22px;align-items:start}
+.dash > .stack{min-width:0;gap:22px}
+.dash.dash-limited{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dash-limited > .stack{display:contents}
 .bars{list-style:none;display:grid;gap:14px}
 .bars li{display:grid;grid-template-columns:110px 1fr 28px;align-items:center;gap:12px;font-size:.86rem}
 .bars span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -90,9 +95,19 @@
 
 @media (max-width:1100px){.dash{grid-template-columns:1fr}}
 @media (max-width:760px){
+  .dash.dash-limited{grid-template-columns:1fr}
   .banner{flex-direction:column;align-items:flex-start;padding:26px 22px}
   .banner .who{width:104px;height:104px;border-radius:30px}
   .bars li{grid-template-columns:86px 1fr 24px}
+}
+@media (max-width:560px){
+  .tiles{grid-template-columns:1fr;gap:12px}
+  .tile{padding:20px}
+  .tile .ic{margin-bottom:12px}
+  .feed a{gap:10px}
+  .feed time{max-width:80px;white-space:normal;text-align:right}
+  .sys{grid-template-columns:1fr}
+  .look{flex-wrap:wrap}
 }
 </style>
 @endpush
@@ -111,11 +126,16 @@
     <div class="txt">
       <div class="day" id="today">Dashboard</div>
       <h1><span id="greet">Welcome</span>, <span class="serif">{{ strtok($user->name, ' ') }}</span>.</h1>
-      <p>Your portfolio has {{ $totalItems }} pieces of content across {{ $pages->count() }} pages. Jump straight into what you want to change.</p>
+      @if ($canManageContent)
+        <p>Your portfolio has {{ $totalItems }} pieces of content across {{ $pages->count() }} pages. Jump straight into what you want to change.</p>
+      @else
+        <p>Manage themes, appearance, site pages and messages from your dashboard.</p>
+      @endif
     </div>
   </div>
 
   <div class="tiles">
+    @if ($canManageContent)
     @foreach (collect($collections)->only(['projects', 'experiences', 'education']) as $key => $collection)
       <a class="tile" href="{{ route('admin.items.index', $key) }}" style="animation-delay:{{ $loop->index * .05 }}s">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{{ icon($tileIcons[$key] ?? 'star') }}</svg></div>
@@ -124,9 +144,18 @@
         <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></em>
       </a>
     @endforeach
+    @else
+      @foreach ([['admin.themes', 'Themes', 'Choose a layout', 'layout'], ['admin.appearance', 'Appearance', 'Customize colors', 'star'], ['admin.messages', 'Messages', 'Read visitor messages', 'mail']] as [$tileRoute, $tileTitle, $tileDescription, $tileIcon])
+        <a class="tile" href="{{ route($tileRoute) }}">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{{ icon($tileIcon) }}</svg></div>
+          <b class="tile-title">{{ $tileTitle }}</b><span>{{ $tileDescription }}</span>
+        </a>
+      @endforeach
+    @endif
   </div>
 
-  <div class="dash">
+  <div @class(['dash', 'dash-limited' => ! $canManageContent])>
+    @if ($canManageContent)
     <div class="stack">
       <div class="card" style="animation-delay:.2s">
         <div class="card-head"><h2>Recently updated</h2><span>Latest {{ $recent->count() }}</span></div>
@@ -158,6 +187,7 @@
       </div>
     </div>
 
+    @endif
     <div class="stack">
       <div class="card" style="animation-delay:.24s">
         <div class="card-head"><h2>Look &amp; feel</h2><a href="{{ route('admin.appearance') }}">Change</a></div>
@@ -181,6 +211,7 @@
         <p class="hint">Green dot: shown in the header menu.</p>
       </div>
 
+      @if ($canManageContent)
       <div class="card" style="animation-delay:.4s">
         <div class="card-head"><h2>System</h2><span>{{ app()->environment() }}</span></div>
         <div class="sys">
@@ -189,6 +220,7 @@
           <div><small>Database</small><b>{{ config('database.connections.'.config('database.default').'.database') }}</b></div>
         </div>
       </div>
+      @endif
     </div>
   </div>
 @endsection
